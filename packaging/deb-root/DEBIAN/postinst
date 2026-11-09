@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+MODEL=$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)
+if [ "$MODEL" = "MacBookAir7,2" ]; then
+  modprobe acpi_call 2>/dev/null || true
+  systemctl daemon-reload || true
+  systemctl enable --now mac-powerfix.service || true
+else
+  echo "macbookair72-power: model '$MODEL' is not MacBookAir7,2; service NOT enabled." >&2
+fi
+exit 0

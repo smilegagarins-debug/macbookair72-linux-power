@@ -1,0 +1,41 @@
+#!/bin/bash
+# mac-tbpower off|on|status
+# Cut / restore power to the Thunderbolt controller (Intel DSL5320 "Falcon Ridge 2C")
+# on a MacBookAir7,2 (Air 2015-2017).
+#   off: unload thunderbolt, remove 05:00.0, set Link Disable on root port 00:1c.4,
+#        call ACPI NHI0.SXFP(0) -> PCH GPIO47 driven low (controller unpowered)
+#   on:  call ACPI NHI0.TRPE(1,100) -> GPIO47 released (powered), retrain link, rescan
+# Requires: acpi_call (acpi-call-dkms), pciutils (setpci), python3, root.
+# PCI addresses below are for MacBookAir7,2. Check yours with `lspci -tv` first.
+set -u
+RP=0000:00:1c.4; UP=0000:05:00.0; NHI='\_SB.PCI0.RP05.UPSB.DSB0.NHI0'
+acall(){ modprobe acpi_call 2>/dev/null; echo "$1" > /proc/acpi/call; tr -d '\0' < /proc/acpi/call; }
+# read the GPIO47 pad register of the PCH (GPIO community base 0x800 + 0x100 + 47*8 = 0x978)
+g47(){ python3 -c "import os,struct;f=os.open('/dev/port',os.O_RDONLY);os.lseek(f,0x978,0);print(hex(struct.unpack('<I',os.read(f,4))[0]))"; }
+case "${1:-status}" in
+off)
+  # Always run every step: after resume the root port comes back with LnkDisable=0
+  # and package C-states fall back to pc3.
+  echo on > /sys/bus/pci/devices/$RP/power/control; sleep 0.2
+  modprobe -r thunderbolt 2>/dev/null
+  [ -e /sys/bus/pci/devices/$UP ] && echo 1 > /sys/bus/pci/devices/$UP/remove && sleep 0.5
+  v=$(setpci -s ${RP#0000:} CAP_EXP+10.w)
+  setpci -s ${RP#0000:} CAP_EXP+10.w=$(printf %04x $((0x$v | 0x10)))
+  sleep 0.2
+  acall "$NHI.SXFP 0" >/dev/null
+  echo auto > /sys/bus/pci/devices/$RP/power/control
+  echo "off: GPIO47=$(g47) (0x1 = power removed) LnkCtl=$(setpci -s ${RP#0000:} CAP_EXP+10.w)"
+  ;;
+on)
+  echo on > /sys/bus/pci/devices/$RP/power/control; sleep 0.3
+  acall "$NHI.TRPE 1 100" >/dev/null
+  echo 1 > /sys/bus/pci/rescan; sleep 1
+  modprobe thunderbolt 2>/dev/null
+  echo auto > /sys/bus/pci/devices/$RP/power/control
+  echo "on: GPIO47=$(g47) UPCK=$(acall '\_SB.PCI0.UPCK')"
+  ;;
+status)
+  echo "GPIO47=$(g47) (0x1 = power removed, 0x40000005 = powered) LnkCtl=$(setpci -s ${RP#0000:} CAP_EXP+10.w) (bit 0x10 = link disabled) RP=$(cat /sys/bus/pci/devices/$RP/power/runtime_status) NHI=$([ -e /sys/bus/pci/devices/0000:07:00.0 ] && echo present || echo absent)"
+  ;;
+*) echo "usage: $0 off|on|status"; exit 1;;
+esac

@@ -1,0 +1,14 @@
+[Unit]
+Description=MacBookAir7,2 power fix: Thunderbolt power-off + camera ASPM L1 (deep package C-states)
+After=systemd-modules-load.service systemd-udev-settle.service
+ConditionPathExists=/usr/local/sbin/mac-tbpower
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/local/sbin/mac-powerfix apply
+ExecStop=/usr/local/sbin/mac-powerfix revert
+
+[Install]
+WantedBy=multi-user.target

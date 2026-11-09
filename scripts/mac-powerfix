@@ -1,0 +1,23 @@
+#!/bin/bash
+# mac-powerfix apply|revert
+# MacBookAir7,2: power off the Thunderbolt controller + enable ASPM L1 on the FaceTime camera.
+# Both are required to let the CPU package reach pc6 (without them the ceiling is pc3).
+case "${1:-apply}" in
+apply)
+  /usr/local/sbin/mac-tbpower off
+  for d in /sys/bus/pci/devices/*; do
+    # Broadcom 14e4:1570 = FaceTime HD camera
+    [ "$(cat $d/vendor)" = 0x14e4 ] && [ "$(cat $d/device)" = 0x1570 ] || continue
+    dev=$(basename $d); rp=$(basename $(dirname $(readlink -f $d)))
+    [ -w $d/link/l1_aspm ] && echo 1 > $d/link/l1_aspm 2>/dev/null
+    # sysfs sometimes reports success without touching hardware: verify and set L1 directly
+    # (port first, then device)
+    for x in $rp $dev; do
+      v=$(setpci -s ${x#0000:} CAP_EXP+10.w)
+      [ $((0x$v & 2)) -eq 0 ] && setpci -s ${x#0000:} CAP_EXP+10.w=$(printf %04x $((0x$v | 2)))
+    done
+    echo "camera $dev: LnkCtl=$(setpci -s ${dev#0000:} CAP_EXP+10.w) port $rp: $(setpci -s ${rp#0000:} CAP_EXP+10.w)"
+  done ;;
+revert) /usr/local/sbin/mac-tbpower on ;;
+esac
+exit 0

@@ -1,0 +1,12 @@
+Package: macbookair72-power
+Version: 0.1.0
+Section: utils
+Priority: optional
+Architecture: all
+Depends: acpi-call-dkms, pciutils, python3, systemd
+Maintainer: Unmaintained <noreply@example.invalid>
+Description: Idle power fix for MacBookAir7,2 (Thunderbolt power-off + camera ASPM)
+ Cuts power to the Thunderbolt controller through the Apple ACPI method and
+ enables ASPM L1 on the FaceTime camera so the CPU package can reach deep
+ C-states (pc6). Tested only on MacBookAir7,2 with Ubuntu 26.04. The
+ Thunderbolt / Mini DisplayPort port is unpowered while the fix is active.
