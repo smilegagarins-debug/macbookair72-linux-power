@@ -28,7 +28,18 @@ against `PDTR - PSTR` = battery charge current). Clean desktop after reboot, bri
 | Package pc6 residency | 0% | ~65% |
 
 Run-to-run spread within a series is 0.3-0.9 W, so the effect is well outside noise.
-Battery-discharge video playback hours are **not** measured yet (see docs/MEASUREMENTS.md).
+Video playback on battery (Chrome, RuTube H.264 with VAAPI, brightness 50%, discharging, interleaved A-B-A, 3 x 30 s each,
+total system power from SMC `PSTR`, matches battery `current x voltage`):
+
+| Run | Fix | Total power | Package pc6 |
+|---|---|---|---|
+| A1 | on  | 7.17 / 7.29 / 7.38 W (avg 7.28) | ~27% |
+| B  | off (Thunderbolt powered) | 10.12 / 9.27 / 9.15 W (avg 9.51) | 0% |
+| A2 | on  | 7.15 / 7.20 / 7.53 W (avg 7.29) | ~29% |
+
+-2.2 W, about 23%. With a 53 Wh battery that is roughly 7.3 h instead of 5.6 h of video (calculated, not a full
+discharge test). In run B only the Thunderbolt part is reverted; the camera ASPM change stays until reboot,
+so the true "before" is slightly worse than B.
 
 ## Install
 

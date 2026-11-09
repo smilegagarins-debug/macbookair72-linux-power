@@ -20,6 +20,17 @@ Accept an effect only if it exceeds spread.
 
 ## Not yet measured
 
-- Discharging battery with video playback (battery hours with and without the fix). Expected, not measured:
-  about -1.5 to -2 W with Chrome running.
+- A full discharge test (hours to empty) with and without the fix. Hours in the README are computed from power x 53 Wh.
 - Behaviour on other Mac models.
+
+## Video playback on battery (2026-11-09)
+
+Chrome playing H.264 video (VAAPI), brightness 50% (1401/2777), discharging, interleaved A-B-A:
+
+| Series | PSTR per 30 s run (W) | mean | pc6 |
+|---|---|---|---|
+| A1 fix on | 7.17, 7.29, 7.38 | 7.28 | 27% |
+| B fix off | 10.12, 9.27, 9.15 | 9.51 | 0% |
+| A2 fix on | 7.15, 7.20, 7.53 | 7.29 | 29% |
+
+Within-run std 0.5-2.4 W. Earlier single battery-current run at the same brightness: 6.39-6.58 W.
