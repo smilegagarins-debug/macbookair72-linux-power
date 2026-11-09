@@ -1,7 +1,7 @@
 # Drafts for publication - NOT published
 
 Nothing here has been posted. Each file is a ready text; the owner decides where, when and under which account.
-Replace `<REPO-URL>` once the repository is public. Before posting: get the battery-discharge video measurement
+Replace `https://github.com/smilegagarins-debug/macbookair72-linux-power` once the repository is public. Before posting: get the battery-discharge video measurement
 (docs/MEASUREMENTS.md) and replace the "SMC from AC" caveat if possible.
 
 1. `01-github-pr-thunderbolt-disable-mba2014.md` - issue/PR text for flo-at-work/thunderbolt-disable-mba2014

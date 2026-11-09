@@ -44,7 +44,7 @@ so the true "before" is slightly worse than B.
 ## Install
 
 ```
-git clone <this repo> && cd macbookair72-linux-power
+git clone https://github.com/smilegagarins-debug/macbookair72-linux-power.git && cd macbookair72-linux-power
 sudo ./install.sh        # installs acpi-call-dkms, scripts, systemd unit and a resume hook
 sudo mac-tbpower status
 ```
